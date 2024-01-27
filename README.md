@@ -27,14 +27,19 @@ Include the `Logger` class in your project. No additional packages are required.
 Configure the logger based on your preferences and use the logging methods to log messages at various levels:
 
 ```csharp
+// Configure logger
 Logger.LogLevel = LogLevel.INFO;
 Logger.ConsoleOutputEnabled = true;
 Logger.FileOutputEnabled = true;
 Logger.FilePath = "path/to/your/logfile.txt";
 Logger.TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
 
+// Log some stuff
 Logger.Info("This is an informational message.");
 Logger.Error("This is an error message.");
+
+// Log some stuff to only one destination
+Log.Info("This is information that only outputs to the console, even if FileOutputEnabled = true", OutputPreference.ConsoleOnly");
 ```
 
 ## Configuration Options
