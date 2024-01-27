@@ -39,7 +39,7 @@ Logger.Info("This is an informational message.");
 Logger.Error("This is an error message.");
 
 // Log some stuff to only one destination
-Log.Info("This is information that only outputs to the console, even if FileOutputEnabled = true", OutputPreference.ConsoleOnly");
+Log.Info("This is information that only outputs to the console, even if FileOutputEnabled = true", OutputPreference.ConsoleOnly);
 ```
 
 ## Configuration Options
