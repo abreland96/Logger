@@ -11,4 +11,5 @@ Log.Success("Success message");
 Log.Warning("Warning message");
 Log.Error("Error message");
 Log.Critical("Critical message");
+Log.Critical("Test commit");
 Console.ReadLine();
