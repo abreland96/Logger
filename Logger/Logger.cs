@@ -83,7 +83,10 @@ namespace Logger {
         }
     }
 
-    public static class Logger {
+    /// <summary>
+    /// Static entry point for typical logging methods. Users can configure this class at project startup and use it throughout the project, and all log messages will go to the same place.
+    /// </summary>
+    public static class StaticLogger {
 
         // Fields
         private static readonly object _lockObj = new object();
@@ -106,7 +109,7 @@ namespace Logger {
         
 
         // Static constructor
-        static Logger() {
+        static StaticLogger() {
             TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff";
             ConsoleOutputEnabled = false;
             DefaultConsoleForegroundColor = ConsoleColor.White;
@@ -150,6 +153,93 @@ namespace Logger {
             Log(new LogMessage(LogLevel.CRITICAL, message), outputPreference);
         }
  
+    }
+
+    /// <summary>
+    /// Instanced entry point for typical logging methods. Users can create multiple loggers if the want to create separate logs for various parts of a program.
+    /// </summary>
+    public class Logger {
+
+        // Fields
+        private readonly object _lockObj = new object();
+        private Dictionary<LogLevel, ConsoleColor> _logLevelColors;
+
+        // Properties
+        public string SourceName { get; set; }
+        public string TimestampFormat { get; set; }
+        public bool ConsoleOutputEnabled { get; set; }
+        public ConsoleColor DefaultConsoleForegroundColor { get; set; }
+        public bool FileOutputEnabled { get; set; }
+        public string FilePath { get; set; }
+        public LogLevel LogLevel { get; set; }
+
+
+        // Constructor
+        public Logger(
+            string timestampFormat = "yyyy-MM-dd HH:mm:ss.fff",
+            LogLevel logLevel = LogLevel.INFO,
+            bool consoleEnabled = true, ConsoleColor defaultConsoleColor = ConsoleColor.White,
+            bool fileEnabled = false, string filePath = ".\\Log.txt",
+            string sourceName = null
+        ) {
+            TimestampFormat = timestampFormat;
+            ConsoleOutputEnabled = consoleEnabled;
+            DefaultConsoleForegroundColor = defaultConsoleColor;
+            LogLevel = logLevel;
+            FileOutputEnabled = fileEnabled;
+            FilePath = filePath;
+            SourceName = sourceName;
+            _logLevelColors = new Dictionary<LogLevel, ConsoleColor> {
+                { LogLevel.DEBUG, ConsoleColor.Cyan },
+                { LogLevel.INFO, DefaultConsoleForegroundColor },
+                { LogLevel.SUCCESS, ConsoleColor.Green },
+                { LogLevel.WARNING, ConsoleColor.Yellow },
+                { LogLevel.ERROR, ConsoleColor.Red },
+                { LogLevel.CRITICAL, ConsoleColor.DarkRed }
+            };
+        }
+
+        // Methods
+        private void Log(LogMessage logMessage, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            lock (_lockObj) {
+                if (logMessage.LogLevel < LogLevel) { return; }
+                string timestampString = logMessage.Timestamp.ToString(TimestampFormat);
+                string logOutput;
+                if ( SourceName != null ) {
+                    logOutput = $"[{timestampString}][{SourceName}] {logMessage.LogLevel}: {logMessage.Message}";
+                }
+                else {
+                    logOutput = $"[{timestampString}] {logMessage.LogLevel}: {logMessage.Message}";
+                }
+                if (ConsoleOutputEnabled && outputPreference != OutputPreference.FileOnly) {
+                    Console.ForegroundColor = _logLevelColors[logMessage.LogLevel];
+                    Console.WriteLine(logOutput);
+                    Console.ForegroundColor = DefaultConsoleForegroundColor;
+                }
+                if (FileOutputEnabled && outputPreference != OutputPreference.ConsoleOnly) {
+                    File.AppendAllText(FilePath, logOutput + "\r\n");
+                }
+            }
+        }
+        public void Debug(string message, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            Log(new LogMessage(LogLevel.DEBUG, message), outputPreference);
+        }
+        public void Info(string message, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            Log(new LogMessage(LogLevel.INFO, message), outputPreference);
+        }
+        public void Success(string message, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            Log(new LogMessage(LogLevel.SUCCESS, message), outputPreference);
+        }
+        public void Warning(string message, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            Log(new LogMessage(LogLevel.WARNING, message), outputPreference);
+        }
+        public void Error(string message, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            Log(new LogMessage(LogLevel.ERROR, message), outputPreference);
+        }
+        public void Critical(string message, OutputPreference outputPreference = OutputPreference.AllEnabled) {
+            Log(new LogMessage(LogLevel.CRITICAL, message), outputPreference);
+        }
+
     }
 
 }
